@@ -165,11 +165,15 @@ class App extends React.Component {
     this.setState({ anecdotes })
   }
 
+
+
   render() {
     return (
       <div>
         <h1>Software anecdotes</h1>
+        <div style={notificationStyle}>
         <Notification message={this.state.notification} />
+        </div>
         <div>   
     <Router>
       <div>
@@ -197,6 +201,12 @@ class App extends React.Component {
       </div>
     );
   }
+}
+
+const notificationStyle = {
+  color: 'green',
+  fontStyle: 'italic',
+  fontSize: 16
 }
 
 export default App;
