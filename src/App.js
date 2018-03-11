@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { Redirect } from 'react-router'
 
 /* const Menu = () => (
 
@@ -9,10 +10,22 @@ const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
     <ul>
-      {anecdotes.map(anecdote => <li key={anecdote.id} >{anecdote.content}</li>)}
+      {anecdotes.map(anecdote => 
+      <li key={anecdote.id}>
+        <Link to={`/anecdotes/${anecdote.id}`}> {anecdote.content} </Link>
+      </li>
+    )}
     </ul>  
   </div>
 )
+
+const Anecdote = ({anecdote}) => {
+  
+  return(
+  <div>
+    <h2>{anecdote.content}</h2>
+  </div>
+)}
 
 const About = () => (
   <div>
@@ -27,6 +40,17 @@ const About = () => (
     <p>Software engineering is full of excellent anecdotes, at this app you can find the best and add more.</p>
   </div>
 )
+
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+  return (
+    <div>
+      {message}
+    </div>
+  )
+}
 
 const Footer = () => (
   <div>
@@ -52,20 +76,24 @@ class CreateNew extends React.Component {
   }
 
   handleSubmit = (e) => {
+
     e.preventDefault()
+    
     this.props.addNew({
       content: this.state.content,
       author: this.state.author,
       info: this.state.info,
       votes: 0
     })
+    this.props.history.push('/anecdotes')
   }
 
   render() {
+
     return(
       <div>
         <h2>create a new anecdote</h2>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit} >
           <div>
             content 
             <input name='content' value={this.state.content} onChange={this.handleChange} />
@@ -78,8 +106,10 @@ class CreateNew extends React.Component {
             url for more info
             <input name='info' value={this.state.info} onChange={this.handleChange} />
           </div> 
-          <button>create</button>
+          <button type="submit">create</button>
+          
         </form>
+   
       </div>  
     )
 
@@ -113,7 +143,10 @@ class App extends React.Component {
 
   addNew = (anecdote) => {
     anecdote.id = (Math.random() * 10000).toFixed(0)
-    this.setState({ anecdotes: this.state.anecdotes.concat(anecdote) })
+    this.setState({ notification: 'a new anecdote ' + anecdote.content + ' created', anecdotes: this.state.anecdotes.concat(anecdote) })
+    setTimeout(() => {
+      this.setState({ notification: null })
+    }, 5000)
   }
 
   anecdoteById = (id) =>
@@ -136,6 +169,7 @@ class App extends React.Component {
     return (
       <div>
         <h1>Software anecdotes</h1>
+        <Notification message={this.state.notification} />
         <div>   
     <Router>
       <div>
@@ -144,10 +178,16 @@ class App extends React.Component {
           <Link to='/new'>create new</Link>&nbsp;
           <Link to='/about'>about</Link>&nbsp;
         </div>
-        <Route path="/anecdotes" render={() => <AnecdoteList anecdotes={this.state.anecdotes} />} />
-        <Route path="/new" render={() => <CreateNew addNew={this.addNew}/> }  />
-        <Route path="/about" render={() => <About /> }  />
-              
+
+        <Route exact path="/anecdotes" render={() => <AnecdoteList anecdotes={this.state.anecdotes} />} />
+
+         <Route exact path="/new" render={({history}) => 
+          <CreateNew history={history} addNew={this.addNew}/> }  />
+
+        <Route exact path="/about" render={() => <About /> }  />
+
+        <Route exact path="/anecdotes/:id" render={({match}) =>
+        <Anecdote anecdote={this.anecdoteById(match.params.id)} />} />      
           
         </div>  
      </Router>
